@@ -171,11 +171,12 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 50,
   },
   statsContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    marginTop: -30,
+    marginTop: -50,
     gap: 16,
   },
   statCard: {

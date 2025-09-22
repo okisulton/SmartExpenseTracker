@@ -4,12 +4,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Search, Trash2 } from 'lucide-react-native';
 import React, { useMemo, useState } from 'react';
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -213,6 +213,7 @@ const styles = StyleSheet.create({
   categoryFilters: {
     marginHorizontal: -20,
     paddingHorizontal: 20,
+    paddingVertical: 2,
   },
   filterButton: {
     flexDirection: 'row',

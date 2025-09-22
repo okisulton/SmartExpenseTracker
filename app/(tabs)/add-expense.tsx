@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TextInput, 
-  TouchableOpacity, 
-  ScrollView, 
-  KeyboardAvoidingView,
-  Platform
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Save, Camera } from 'lucide-react-native';
-import { router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useExpenses } from '@/hooks/expense-store';
 import { EXPENSE_CATEGORIES } from '@/constants/categories';
+import { useExpenses } from '@/hooks/expense-store';
 import { ExpenseCategory } from '@/types/expense';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import { Camera, Save } from 'lucide-react-native';
+import React, { useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function AddExpenseScreen() {
   const { addExpense, isSaving } = useExpenses();
@@ -233,6 +233,8 @@ const styles = StyleSheet.create({
   categoriesScroll: {
     marginHorizontal: -20,
     paddingHorizontal: 20,
+    paddingVertical: 8,
+    paddingRight: 80,
   },
   categoryButton: {
     backgroundColor: 'white',
