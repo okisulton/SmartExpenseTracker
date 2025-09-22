@@ -31,7 +31,7 @@ export default function AnalyticsScreen() {
       {/* Header */}
       <LinearGradient
         colors={['#667eea', '#764ba2']}
-        style={[styles.header, { paddingTop: insets.top + 24 }]}
+        style={[styles.header, { paddingTop: insets.top + 32 }]}
       >
         <Text style={styles.headerTitle}>Analytics</Text>
         <Text style={styles.headerSubtitle}>Insights into your spending</Text>
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 24,
-    paddingTop: 60,
+    paddingTop: 80,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
   },

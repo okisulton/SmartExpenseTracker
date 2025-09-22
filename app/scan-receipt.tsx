@@ -356,7 +356,7 @@ Return ONLY the JSON object, no other text.`
           onRequestClose={cancelConfirmation}
         >
           <View style={styles.modalContainer}>
-            <View style={[styles.modalHeader, { paddingTop: insets.top + 20 }]}>
+            <View style={[styles.modalHeader, { paddingTop: insets.top + 32 }]}>
               <TouchableOpacity onPress={cancelConfirmation}>
                 <X color="#666" size={24} />
               </TouchableOpacity>
@@ -468,7 +468,7 @@ Return ONLY the JSON object, no other text.`
     <View style={styles.container}>
       <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
         {/* Header */}
-        <View style={[styles.cameraHeader, { paddingTop: insets.top + 20 }]}>
+        <View style={[styles.cameraHeader, { paddingTop: insets.top + 32 }]}>
           <TouchableOpacity 
             style={styles.backButton}
             onPress={() => router.back()}

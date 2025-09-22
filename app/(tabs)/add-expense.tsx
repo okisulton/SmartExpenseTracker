@@ -57,7 +57,7 @@ export default function AddExpenseScreen() {
         {/* Header */}
         <LinearGradient
           colors={['#667eea', '#764ba2']}
-          style={[styles.header, { paddingTop: insets.top + 24 }]}
+          style={[styles.header, { paddingTop: insets.top + 32 }]}
         >
           <Text style={styles.headerTitle}>Add Expense</Text>
           <Text style={styles.headerSubtitle}>Track your spending manually</Text>
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 24,
-    paddingTop: 60,
+    paddingTop: 80,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
   },
