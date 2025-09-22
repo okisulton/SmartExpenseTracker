@@ -1,18 +1,14 @@
-import createContextHook from '@nkzw/create-context-hook';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Expense } from '@/types/expense';
 import { getCategoryById } from '@/constants/categories';
-
-const STORAGE_KEY = 'financial_tracker_expenses';
+import { Expense } from '@/types/expense';
+import { STORAGE_KEYS, StorageUtils } from '@/utils/storage';
+import createContextHook from '@nkzw/create-context-hook';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const loadExpenses = async (): Promise<Expense[]> => {
   try {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    }
-    return [];
+    const expenses = await StorageUtils.getData<Expense[]>(STORAGE_KEYS.EXPENSES);
+    return expenses || [];
   } catch (error) {
     console.error('Error loading expenses:', error);
     return [];
@@ -22,8 +18,9 @@ const loadExpenses = async (): Promise<Expense[]> => {
 const saveExpenses = async (expenses: Expense[]): Promise<Expense[]> => {
   if (!Array.isArray(expenses)) return [];
   try {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+    const success = await StorageUtils.setData(STORAGE_KEYS.EXPENSES, expenses);
+    if (!success) {
+      console.error('Failed to save expenses to storage');
     }
     return expenses;
   } catch (error) {
@@ -80,14 +77,63 @@ export const [ExpenseContext, useExpenses] = createContextHook(() => {
     mutate(updated);
   }, [expenses, mutate]);
 
+  const clearAllExpenses = useCallback(async () => {
+    try {
+      const success = await StorageUtils.removeData(STORAGE_KEYS.EXPENSES);
+      if (success) {
+        mutate([]);
+      }
+      return success;
+    } catch (error) {
+      console.error('Error clearing all expenses:', error);
+      return false;
+    }
+  }, [mutate]);
+
+  const exportExpenses = useCallback(async () => {
+    try {
+      return JSON.stringify(expenses, null, 2);
+    } catch (error) {
+      console.error('Error exporting expenses:', error);
+      return null;
+    }
+  }, [expenses]);
+
+  const importExpenses = useCallback(async (expensesJson: string) => {
+    try {
+      const importedExpenses = JSON.parse(expensesJson) as Expense[];
+      if (Array.isArray(importedExpenses)) {
+        mutate(importedExpenses);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error importing expenses:', error);
+      return false;
+    }
+  }, [mutate]);
+
   return useMemo(() => ({
     expenses,
     addExpense,
     deleteExpense,
     updateExpense,
+    clearAllExpenses,
+    exportExpenses,
+    importExpenses,
     isLoading: expensesQuery.isLoading,
     isSaving: saveMutation.isPending,
-  }), [expenses, addExpense, deleteExpense, updateExpense, expensesQuery.isLoading, saveMutation.isPending]);
+  }), [
+    expenses, 
+    addExpense, 
+    deleteExpense, 
+    updateExpense, 
+    clearAllExpenses,
+    exportExpenses,
+    importExpenses,
+    expensesQuery.isLoading, 
+    saveMutation.isPending
+  ]);
 });
 
 export function useExpenseAnalytics() {
