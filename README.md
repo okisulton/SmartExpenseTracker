@@ -1,5 +1,7 @@
 # SmartExpenseTracker
 
+![Thumbnail](assets/images/screenshots/thumbnail.png)
+
 An expense tracker app with receipt scanning and AI-powered analysis, built with Expo + React Native.
 
 - Download APK (EAS Build): [Download here](https://expo.dev/accounts/okisulton/projects/SmartExpenseTracker/builds/66d27a53-1920-4566-9208-038e2cbcac11)
