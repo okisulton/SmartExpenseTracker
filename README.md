@@ -18,8 +18,8 @@ An expense tracker app with receipt scanning and AI-powered analysis, built with
 - ✅ Improved data migration system
 - ✅ Enhanced AI receipt processing
 - ✅ Better error handling and stability
-- ✅ Add input date in add expense
-- ✅ Add filter date range in transaction
+- ✅ Added input date in add expense
+- ✅ Added filter date range in transaction
 
 ### v1.0.0 (Build 1)
 
