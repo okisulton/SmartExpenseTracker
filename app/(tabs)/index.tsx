@@ -96,8 +96,14 @@ export default function DashboardScreen() {
             <View key={item.category.id} style={styles.categoryItem}>
               <View style={styles.categoryLeft}>
                 <Text style={styles.categoryIcon}>{item.category.icon}</Text>
-                <View>
-                  <Text style={styles.categoryName}>{item.category.name}</Text>
+                <View style={styles.categoryDetails}>
+                  <Text 
+                    style={styles.categoryName}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {item.category.name}
+                  </Text>
                   <Text style={styles.categoryPercentage}>
                     {item.percentage.toFixed(1)}% of spending
                   </Text>
@@ -122,8 +128,14 @@ export default function DashboardScreen() {
             <View key={expense.id} style={styles.expenseItem}>
               <View style={styles.expenseLeft}>
                 <Text style={styles.expenseIcon}>{expense.category.icon}</Text>
-                <View>
-                  <Text style={styles.expenseDescription}>{expense.description}</Text>
+                <View style={styles.expenseDetails}>
+                  <Text 
+                    style={styles.expenseDescription} 
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {expense.description}
+                  </Text>
                   <Text style={styles.expenseDate}>{formatDate(expense.date)}</Text>
                 </View>
               </View>
@@ -267,6 +279,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    flex: 1,
+    minWidth: 0,
+  },
+  categoryDetails: {
+    flex: 1,
+    minWidth: 0,
   },
   categoryIcon: {
     fontSize: 24,
@@ -284,6 +302,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#e74c3c',
+    marginLeft: 12,
+    minWidth: 80,
+    textAlign: 'right',
   },
   expenseItem: {
     flexDirection: 'row',
@@ -303,6 +324,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    flex: 1,
+    minWidth: 0,
+  },
+  expenseDetails: {
+    flex: 1,
+    minWidth: 0,
   },
   expenseIcon: {
     fontSize: 20,
@@ -320,6 +347,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#e74c3c',
+    marginLeft: 12,
+    minWidth: 80,
+    textAlign: 'right',
   },
   emptyState: {
     alignItems: 'center',
