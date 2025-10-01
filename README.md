@@ -4,9 +4,45 @@
 
 An expense tracker app with receipt scanning and AI-powered analysis, built with Expo + React Native.
 
-- Download APK (EAS Build): [Download here](https://expo.dev/accounts/okisulton/projects/SmartExpenseTracker/builds/66d27a53-1920-4566-9208-038e2cbcac11)
+**Current Version: 1.1.0**
+
+- Download APK (EAS Build): [Download here](https://expo.dev/accounts/okisulton/projects/SmartExpenseTracker/builds/b7d87b1a-b1e1-46a5-addb-71eefef435c8)
 - Or scan the QR to download the APK:
-  ![Build QR](assets/images/build-qr.png "QR Download APK")
+  ![Build QR](assets/images/screenshots/build-qr.png "QR Download APK")
+
+## Version History
+
+### v1.1.0 (Build 2)
+
+- ✅ Added seamless app updates (no uninstall required)
+- ✅ Improved data migration system
+- ✅ Enhanced AI receipt processing
+- ✅ Better error handling and stability
+- ✅ Add input date in add expense
+- ✅ Add filter date range in transaction
+
+### v1.0.0 (Build 1)
+
+- ✅ Initial release
+- ✅ Basic expense tracking
+- ✅ Receipt scanning with AI
+- ✅ Analytics and reporting
+
+## App Updates
+
+The app now supports seamless updates! When a new version is available:
+
+1. Download the new APK from the link above
+2. Install it directly over the existing app
+3. Your data will be automatically migrated
+4. No need to uninstall the old version
+
+**Important Notes:**
+
+- Always use the official download links
+- Updates preserve all your expense data
+- Migration runs automatically on first launch
+
 ## Quick Links
 
 - [Install APK on Android](#install-apk-on-android)
@@ -38,6 +74,7 @@ An expense tracker app with receipt scanning and AI-powered analysis, built with
 4) Open the app once installed.
 
 Note:
+
 - On first launch, the app may request Camera/Storage permissions (see [App Permissions](#app-permissions)).
 
 ## Run for Development
@@ -51,6 +88,7 @@ Prereqs: Node.js LTS, npm/yarn/pnpm.
   - `npx expo start`
 
 Relevant project config:
+
 - App config: [app.json](app.json)
 - EAS config: [eas.json](eas.json)
 - Type definitions: [expo-env.d.ts](expo-env.d.ts)
@@ -72,14 +110,17 @@ The app uses `@react-native-async-storage/async-storage` to persist data locally
 - User preferences store: [hooks/preferences-store.ts](hooks/preferences-store.ts)
 
 Storage keys:
+
 - EXPENSES: `financial_tracker_expenses`
 - USER_PREFERENCES: `financial_tracker_preferences`
 
 Available operations (via hooks):
+
 - Expenses: add, update, delete, clear-all, export (JSON), import (JSON)
 - Preferences: set currency, theme (light/dark/system), toggle notifications, reset
 
 Utility components (optional, for testing/dev):
+
 - Storage demo: [components/storage-demo.tsx](components/storage-demo.tsx)
 - AsyncStorage tests: [components/async-storage-test.tsx](components/async-storage-test.tsx)
 
@@ -98,6 +139,7 @@ Utility components (optional, for testing/dev):
 ## Project Structure
 
 Key files/directories:
+
 - Routing root: [app/_layout.tsx](app/_layout.tsx)
 - Not found screen: [app/+not-found.tsx](app/+not-found.tsx)
 - Main tabs: [app/(tabs)/index.tsx](app/(tabs)/index.tsx), [app/(tabs)/transactions.tsx](app/(tabs)/transactions.tsx), [app/(tabs)/add-expense.tsx](app/(tabs)/add-expense.tsx), [app/(tabs)/analytics.tsx](app/(tabs)/analytics.tsx)
@@ -126,22 +168,24 @@ Permissions are requested when the related features are first used.
 
 ## Screenshots
 
-- Home/Dashboard: 
-![Home](assets/images/screenshots/home.png)
-- Transactions List: 
-![Transactions](assets/images/screenshots/transactions.png)
-- Receipt Scanning: 
-![Scan Receipt](assets/images/screenshots/scan-receipt.png)
-- AI Receipt Analysis: 
-![Analyze Receipt](assets/images/screenshots/ai-analyzing.png)
-- OCR/Extraction Result: 
-![OCR Result](assets/images/screenshots/ocr-result.png)
-- Analytics: 
-![Analytics](assets/images/screenshots/analytics.png)
+- Home/Dashboard:
+  ![Home](assets/images/screenshots/home.png)
+- Transactions List:
+  ![Transactions](assets/images/screenshots/transactions.png)
+- Receipt Scanning:
+  ![Scan Receipt](assets/images/screenshots/scan-receipt.png)
+- AI Receipt Analysis:
+  ![Analyze Receipt](assets/images/screenshots/ai-analyzing.png)
+- OCR/Extraction Result:
+  ![OCR Result](assets/images/screenshots/ocr-result.png)
+- Add Expense
+  ![Add Expense](assets/images/screenshots/add-expense.png)
+- Analytics:
+  ![Analytics](assets/images/screenshots/analytics.png)
 
 QR code for APK download:
 
-- ![Build QR](assets/images/build-qr.png)
+- ![Build QR](assets/images/screenshots/build-qr.png)
 
 ## Troubleshooting
 
