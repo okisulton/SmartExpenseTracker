@@ -99,6 +99,11 @@ export const [ExpenseContext, useExpenses] = createContextHook(() => {
     }
   }, [expenses]);
 
+  const addMultipleExpenses = useCallback((newExpenses: Expense[]) => {
+    const updated = [...newExpenses, ...expenses];
+    mutate(updated);
+  }, [expenses, mutate]);
+
   const importExpenses = useCallback(async (expensesJson: string) => {
     try {
       const importedExpenses = JSON.parse(expensesJson) as Expense[];
@@ -116,6 +121,7 @@ export const [ExpenseContext, useExpenses] = createContextHook(() => {
   return useMemo(() => ({
     expenses,
     addExpense,
+    addMultipleExpenses,
     deleteExpense,
     updateExpense,
     clearAllExpenses,
@@ -125,7 +131,8 @@ export const [ExpenseContext, useExpenses] = createContextHook(() => {
     isSaving: saveMutation.isPending,
   }), [
     expenses, 
-    addExpense, 
+    addExpense,
+    addMultipleExpenses, 
     deleteExpense, 
     updateExpense, 
     clearAllExpenses,
