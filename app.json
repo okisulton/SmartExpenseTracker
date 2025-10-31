@@ -2,7 +2,7 @@
   "expo": {
     "name": "SmartExpenseTracker",
     "slug": "SmartExpenseTracker",
-    "version": "1.1.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "smartexpensetracker",
@@ -20,14 +20,14 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "monochromeImage": "./assets/images/icon.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "id.my.osa.smartexpensetracker",
-      "versionCode": 2,
+      "versionCode": 3,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
@@ -78,5 +78,8 @@
         "projectId": "29b9250f-913f-4441-87e3-0d8e9e36da4c"
       }
     }
+    // "updates": {
+    //   "enabled": false
+    // }
   }
 }
