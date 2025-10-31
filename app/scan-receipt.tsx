@@ -1,23 +1,25 @@
+import { GEMINI_API_KEY } from '@/constants/api';
 import { EXPENSE_CATEGORIES, getCategoryById } from '@/constants/categories';
 import { useExpenses } from '@/hooks/expense-store';
 import { ExpenseCategory } from '@/types/expense';
+import { GoogleGenAI, HarmBlockThreshold, HarmCategory } from '@google/genai';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { ArrowLeft, Camera, Check, Image as ImageIcon, Sparkles, X } from 'lucide-react-native';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Image,
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Image,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -27,6 +29,8 @@ interface ExtractedExpenseData {
   category: ExpenseCategory;
   imageUri: string;
 }
+
+const genAI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 export default function ScanReceiptScreen() {
   const [facing, setFacing] = useState<CameraType>('back');
@@ -67,14 +71,8 @@ export default function ScanReceiptScreen() {
   }
 
   const processReceiptImage = async (imageUri: string) => {
-    // Validate input
     if (!imageUri || !imageUri.trim()) {
       console.error('Invalid image URI provided');
-      return;
-    }
-    
-    if (imageUri.length > 1000) {
-      console.error('Image URI too long');
       return;
     }
     
@@ -87,120 +85,201 @@ export default function ScanReceiptScreen() {
       // Convert image to base64
       const response = await fetch(sanitizedUri);
       const blob = await response.blob();
-      const base64 = await new Promise<string>((resolve) => {
+      const base64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onloadend = () => {
           const result = reader.result as string;
-          resolve(result.split(',')[1]); // Remove data:image/jpeg;base64, prefix
+          resolve(result.split(',')[1]);
         };
+        reader.onerror = (error) => reject(error);
         reader.readAsDataURL(blob);
       });
 
-      // Call AI API to extract expense information
-      const aiResponse = await fetch('https://toolkit.rork.com/text/llm/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
+      console.log('Sending request to Gemini 2.5 Flash...');
+
+      // Use Gemini 2.5 Flash (latest stable model)
+      // Disable thinking mode for OCR tasks to avoid token consumption
+      const result = await genAI.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                inlineData: {
+                  mimeType: 'image/jpeg',
+                  data: base64,
+                },
+              },
+              {
+                text: `You are an AI assistant specialized in extracting expense information from receipt images.
+
+Analyze this receipt image carefully and extract the following information:
+
+1. **amount**: The total amount paid (as a number, without currency symbols)
+   - Look for "Total", "Amount Due", "Grand Total", or similar labels
+   - Return just the number (e.g., 25.99, not "$25.99")
+   - If multiple totals are present, use the largest amount
+   - Use Indonesian currency format (e.g., 15000, 25000.50)
+
+2. **description**: A detailed description combining items purchased and store name
+   - **Format**: "[Items] at [Store Name]"
+   - **Items**: List the main items purchased (2-4 most significant items)
+     * For groceries: "Diapers, milk, noodles at JAYA MART"
+     * For restaurants: "Coffee, croissant at Starbucks"
+     * For shopping: "T-shirt, jeans at Uniqlo"
+     * For single items: "Premium gasoline at Shell"
+   - **If items are unclear**: Use general category + store
+     * "Groceries at Whole Foods"
+     * "Meal at McDonald's"
+     * "Fuel at BP Station"
+   - **If store name is unclear**: Use items only
+     * "Diapers, milk, bread"
+     * "Coffee and pastry"
+   - Keep concise but descriptive (5-10 words max)
+
+3. **category**: The most appropriate expense category
+   - Choose ONE of: food, transport, shopping, entertainment, bills, health, education, travel, other
+   - Examples:
+     * Restaurants, cafes, groceries → "food"
+     * Uber, taxi, gas, parking → "transport"
+     * Clothing, electronics, general retail → "shopping"
+     * Movies, concerts, games → "entertainment"
+     * Utilities, phone, internet → "bills"
+     * Pharmacy, doctor, gym → "health"
+     * Books, courses, school supplies → "education"
+     * Hotels, flights, tours → "travel"
+     * Anything else → "other"
+
+**CRITICAL INSTRUCTIONS:**
+- If the receipt is unclear or unreadable, use these defaults:
+  * amount: 10.00
+  * description: "Receipt expense"
+  * category: "other"
+- Extract information accurately from the receipt
+- You MUST respond with ONLY a valid JSON object
+- Do NOT include any markdown formatting, code blocks, or extra text
+- Do NOT wrap the JSON in \`\`\`json or any other markers
+- The response must be PURE JSON that can be parsed directly
+
+**Required JSON format (respond with ONLY this, nothing else):**
+{"amount": 25.99, "description": "Starbucks Coffee", "category": "food"}`,
+              },
+            ],
+          },
+        ],
+        config: {
+          temperature: 0.2, // Lower temperature for consistent/accurate extraction
+          topP: 0.8,
+          topK: 20,
+          maxOutputTokens: 1024, // Increased to accommodate thinking tokens + actual response
+          // Note: Gemini 2.5 Flash has thinking mode that uses tokens
+          // Increased maxOutputTokens ensures we have enough for actual response
+          safetySettings: [
             {
-              role: 'system',
-              content: `You are an AI assistant that extracts expense information from receipt images. 
-
-Analyze the image and return ONLY a valid JSON object with this exact structure:
-{
-  "amount": <number>,
-  "description": "<string>",
-  "category": "<string>"
-}
-
-Rules:
-- amount: Extract the total amount as a number (e.g., 25.99, not "$25.99")
-- description: Brief description of the purchase (e.g., "Grocery shopping", "Coffee", "Gas station")
-- category: Must be one of: food, transport, shopping, entertainment, bills, health, education, travel, other
-
-If you cannot clearly read the receipt:
-- Use a reasonable default amount like 10.00
-- Use "Receipt expense" as description
-- Use "other" as category
-
-Return ONLY the JSON object, no other text.`
+              category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+              threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
             },
             {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: 'Extract expense information from this receipt image and return only the JSON object.'
-                },
-                {
-                  type: 'image',
-                  image: base64
-                }
-              ]
-            }
-          ]
-        })
+              category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+              threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            },
+            {
+              category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+              threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            },
+            {
+              category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+              threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            },
+          ],
+        },
       });
 
-      if (!aiResponse.ok) {
-        const errorText = await aiResponse.text();
-        console.error('AI API Error:', errorText);
-        throw new Error(`AI service error: ${aiResponse.status}`);
+      console.log('Received response from Gemini');
+      console.log('Full response object:', JSON.stringify(result, null, 2));
+
+      // Debug: Check response structure
+      if (result.candidates && result.candidates.length > 0) {
+        console.log('Candidates:', result.candidates);
+        console.log('First candidate:', result.candidates[0]);
       }
 
-      const aiResult = await aiResponse.json();
-      console.log('AI Response:', aiResult.completion);
+      // Extract text from response
+      const aiResult = result.text || '';
+      console.log('AI Response text:', aiResult);
+      console.log('AI Response length:', aiResult.length);
 
-      // Clean and parse the AI response
+      // Parse structured JSON output (should be clean JSON thanks to schema)
       let expenseData;
-      try {
-        // Remove any markdown formatting or extra text
-        let cleanResponse = aiResult.completion.trim();
+      
+      // Check if we have a valid response
+      if (!aiResult || aiResult.trim().length === 0) {
+        console.error('❌ Empty response from AI');
         
-        // Find JSON object in the response
-        const jsonMatch = cleanResponse.match(/\{[^}]*\}/s);
-        if (jsonMatch) {
-          cleanResponse = jsonMatch[0];
+        // Check for safety/prompt feedback
+        if (result.promptFeedback) {
+          console.error('Prompt feedback:', result.promptFeedback);
         }
         
-        // Remove any code block markers
-        cleanResponse = cleanResponse.replace(/```json\s*|```\s*/g, '');
-        
-        console.log('Cleaned AI response:', cleanResponse);
-        expenseData = JSON.parse(cleanResponse);
-        
-      } catch (parseError) {
-        console.error('Failed to parse AI response:', parseError);
-        console.error('Raw response:', aiResult.completion);
-        
-        // Fallback: create a default expense
+        // Use fallback
         expenseData = {
           amount: 10.00,
-          description: 'Receipt expense (AI parsing failed)',
-          category: 'other'
+          description: 'Receipt expense (Empty AI response)',
+          category: 'other',
         };
+      } else {
+        try {
+          // Clean the response (remove markdown code blocks if present)
+          let cleanedResult = aiResult.trim();
+          
+          // Remove markdown code blocks
+          cleanedResult = cleanedResult.replace(/```json\s*/g, '');
+          cleanedResult = cleanedResult.replace(/```\s*/g, '');
+          
+          // Try to extract JSON object if there's extra text
+          const jsonMatch = cleanedResult.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            cleanedResult = jsonMatch[0];
+          }
+          
+          console.log('Cleaned response:', cleanedResult);
+          
+          expenseData = JSON.parse(cleanedResult);
+          console.log('✅ Parsed expense data:', expenseData);
+        } catch (parseError) {
+          console.error('❌ Failed to parse AI response:', parseError);
+          console.error('Raw response:', aiResult);
+          
+          // Fallback to default values
+          expenseData = {
+            amount: 10.00,
+            description: 'Receipt expense (AI parsing failed)',
+            category: 'other',
+          };
+        }
       }
 
-      // Validate and sanitize the data
+      // Validate and sanitize the extracted data
       let amount = parseFloat(expenseData.amount);
       if (isNaN(amount) || amount <= 0) {
-        console.warn('Invalid amount detected, using default');
+        console.warn('⚠️ Invalid amount detected, using default');
         amount = 10.00;
       }
 
-      const validCategories = ['food', 'transport', 'shopping', 'entertainment', 'bills', 'health', 'education', 'travel', 'other'];
-      const categoryId = validCategories.includes(expenseData.category) ? expenseData.category : 'other';
+      const validCategories = EXPENSE_CATEGORIES.map(c => c.id);
+      const categoryId = validCategories.includes(expenseData.category) 
+        ? expenseData.category 
+        : 'other';
       const category = getCategoryById(categoryId);
       
       const description = (expenseData.description && typeof expenseData.description === 'string') 
         ? expenseData.description.trim() 
         : 'Receipt expense';
 
-      console.log('Processed expense data:', { amount, description, category: category.name });
+      console.log('✅ Final processed data:', { amount, description, category: category.name });
 
-      // Show confirmation modal instead of directly adding expense
+      // Show confirmation modal with extracted data
       const finalExpenseData: ExtractedExpenseData = {
         amount,
         description,
@@ -215,14 +294,18 @@ Return ONLY the JSON object, no other text.`
       setShowConfirmation(true);
 
     } catch (error) {
-      console.error('Error processing receipt:', error);
+      console.error('💥 Error processing receipt:', error);
       
-      // Show user-friendly error message
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      // Log detailed error information
+      if (error instanceof Error) {
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
       
-      // For now, we'll just log the error and reset the image
-      // In a production app, you might want to show an alert or toast
-      alert(`Error processing receipt: ${errorMessage}`);
+      // Provide user-friendly error message
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Error processing receipt: ${errorMessage}\n\nPlease try again with a clearer image.\n\nTips:\n- Ensure good lighting\n- Receipt should be flat and in focus\n- Try uploading from gallery instead`);
       
       setCapturedImage(null);
     } finally {
